@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <application>
+        <!-- Define your foreground service here -->
+        <service
+            android:name=".Mobilitapp"
+            android:exported="false"
+            android:foregroundServiceType="location">
+            <!-- Use android:foregroundServiceType to specify service types as needed -->
+        </service>
+    </application>
+</manifest>
