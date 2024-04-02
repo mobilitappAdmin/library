@@ -229,8 +229,8 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
                     currentDateWindow.add(Calendar.getInstance().time)
                 }
 
-                val output = "Acc -> x: $acc_x, y: $acc_y, z: $acc_z  ->  $currentDT"
-                Log.d("MA lib", "New analyzed window $output")
+                //val output = "Acc -> x: $acc_x, y: $acc_y, z: $acc_z  ->  $currentDT"
+                //Log.d("MA lib", "New analyzed window $output")
             }
 
         }
@@ -358,9 +358,9 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
                 """)
             } else {
                 return ("""MOVING,
-                freqX: ${BigDecimal(fAxis[maxX]).setScale(3, RoundingMode.HALF_EVEN)} magX: ${BigDecimal(psdX[maxX]).setScale(3, RoundingMode.HALF_EVEN)}
-                freqY: ${BigDecimal(fAxis[maxY]).setScale(3, RoundingMode.HALF_EVEN)} magY: ${BigDecimal(psdY[maxY]).setScale(3, RoundingMode.HALF_EVEN)}
-                freqZ: ${BigDecimal(fAxis[maxZ]).setScale(3, RoundingMode.HALF_EVEN)} magZ: ${BigDecimal(psdZ[maxZ]).setScale(3, RoundingMode.HALF_EVEN)}
+                freqX: ${fAxis[maxX]} magX: ${psdX[maxX]}
+                freqY: ${fAxis[maxY]} magY: ${psdY[maxY]}
+                freqZ: ${fAxis[maxZ]} magZ: ${psdZ[maxZ]}
                 time (s): ${winT}
                 """)
             }

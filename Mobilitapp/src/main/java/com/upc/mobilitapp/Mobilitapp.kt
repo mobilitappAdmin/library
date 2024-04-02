@@ -1,8 +1,10 @@
 package com.upc.mobilitapp
 
 import android.Manifest
+import android.R
 import android.app.Activity
 import android.app.Notification
+import android.app.NotificationChannel
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -13,6 +15,7 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.upc.mobilitapp.multimodal.MLService
 import com.upc.mobilitapp.multimodal.StopService
@@ -21,19 +24,27 @@ import com.upc.mobilitapp.sensors.SensorLoader
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.cos
 import kotlin.math.sqrt
 
 
-class Mobilitapp(private val context: Context, private val sensorLoader: SensorLoader, private val notificationId: Int, private val notification: Notification, private val user_id: String): Service() {
+class Mobilitapp: Service() {
+
+    //constructor
+    private var context: Context = this
+    private lateinit var sensorLoader: SensorLoader
+    //private lateinit var notificationId: Int
+    private lateinit var notification: Notification
+    private lateinit var user_id: String
+
+
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
     private lateinit var mlService: MLService
     private lateinit var stopService: StopService
-    private lateinit var  userInfoService: UserInfo
+    private lateinit var  userInfoService: UserInfo //TODO
 
     private var locations = ArrayList<Location>()
     private var fifoAct: LinkedList<String> = LinkedList<String>()
@@ -50,13 +61,14 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
     private var othersRow: Int = 0
     private var ml_calls: Int = 0
     private var last_distance: Double = 0.0
+    private var TAG = "MOBILITAPP"
 
     private fun initialize() {
         first = true
         startDate = Date()
         captureHash = Math.abs((startDate.toString() + user_id).hashCode())
         stop = Pair(0.0f, false)
-        // userInfoService = UserInfo(FILEPATH, captureHash.toString()+'_'+"UserInfo.csv")
+        // userInfoService = UserInfo(FILEPATH, captureHash.toString()+'_'+"UserInfo.csv") TODO
         mlService =  MLService(this)
         mlService.initialize() //load Model
         stopService = StopService(alpha = 0.2, max_radium = 30, num_points = 90, covering_threshold = 75.0F)
@@ -70,13 +82,43 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
         macroState = "STILL"
         prevMacroState = "STILL"
         lastwindow = "-"
+        sensorLoader = SensorLoader(context, user_id)
+        Log.d(TAG, "Service Intialized")
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        getConstructorParams(intent)
+        setupLocationUpdates()
+
         startAsForegroundService()
         startLocationUpdates()
 
+        Log.d(TAG, "Service Started")
+
         return START_REDELIVER_INTENT
+    }
+
+    private fun getConstructorParams(intent: Intent) {
+        user_id = intent.getStringExtra("userId").toString()
+        val NotificationTitle = intent.getStringExtra("NotificationTitle")
+        val NotificationContent = intent.getStringExtra("NotificationDescription")
+        val NotificationChannel = intent.getStringExtra("NotificationChannel")
+
+        if (NotificationTitle != null && NotificationContent != null && NotificationChannel != null) {
+            //TODO add prosibility to add default title and content
+            notification =
+                createNotification(NotificationTitle, NotificationContent, NotificationChannel)!!
+        }
+    }
+
+    private fun createNotification(title: String, content: String, channel_id: String): Notification? {
+        // Build your notification here using the NotificationCompat.Builder
+        // Don't forget to set a small icon, or the notification will not show
+        val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, channel_id)
+            .setSmallIcon(R.drawable.ic_notification_overlay) //TODO change icon
+            .setContentTitle(title)
+            .setContentText(content)
+        return builder.build()
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -90,7 +132,9 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
      */
     private fun startAsForegroundService() {
         // promote service to foreground service
-        startForeground(notificationId, notification)
+        startForeground(1, notification)
+
+        Log.d(TAG, "Start Foreground")
     }
 
     /**
@@ -106,7 +150,7 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
 
         Toast.makeText(this, "Foreground Service created", Toast.LENGTH_SHORT).show()
 
-        setupLocationUpdates()
+        Log.d(TAG, "Service Created")
     }
 
     override fun onDestroy() {
@@ -114,7 +158,7 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
 
         fusedLocationClient.removeLocationUpdates(locationCallback)
         sensorLoader.stopCapture()
-        /*
+        /* TODO
         //push server
         if (!first) {
             userInfoService.createUserInfoDataFile(
@@ -190,6 +234,7 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
                                 mlService.overallPrediction(sensorLoader.getLastWindow(fifoAct.size, fifoAct))
                             macroState = prediction
                             ++ml_calls
+                            Log.d(TAG, "ML call")
                         }
                         ++othersRow
                     }
@@ -205,7 +250,7 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
                                 mlService.overallPrediction(sensorLoader.getLastWindow(3, fifoAct))
                             macroState = prediction
 
-                            Log.d("ML", "call")
+                            Log.d(TAG, "ML call")
 
                             ++othersRow
                             ++ml_calls
@@ -220,16 +265,16 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
                     if (accuracy < 100) {
                         stop = stopService.addLocation(location)
                     }
-
+                    Log.d(TAG, "Location received")
                     intent.putExtra("macroState", macroState)
-                    intent.putExtra("fifo", fifoStr)
+                    intent.putExtra("microStates", fifoStr)
                     intent.putExtra("activity", activity)
-                    intent.putExtra("accuracy", accuracy.toString())
+                    intent.putExtra("location accuracy", accuracy.toString())
                     intent.putExtra("location", location.latitude.toString()+","+location.longitude.toString())
-                    intent.putExtra("stop", BigDecimal(stop.first.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toString() + " %, " + stopService.get_size().toString() + ", " +
+                    intent.putExtra("stop information", BigDecimal(stop.first.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toString() + " %, " + stopService.get_size().toString() + ", " +
                             BigDecimal(stopService.distance_to_last_location()).setScale(2, RoundingMode.HALF_EVEN).toString() + " m, " +  BigDecimal(stopService.get_current_alpha()).setScale(3, RoundingMode.HALF_EVEN).toString())
-                    intent.putExtra("ml", ml_calls.toString())
-                    Log.d("MA lib", "send fifo $fifoStr")
+                    intent.putExtra("ml calls", ml_calls.toString())
+                    Log.d(TAG, "Send fifo $fifoStr")
 
                     context.sendBroadcast(intent)
 
@@ -240,9 +285,10 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
             }
         }
         locationRequest = LocationRequest.create()
-        locationRequest.interval = (30 * 1000).toLong() // 18 seconds
-        locationRequest.fastestInterval = (20 * 1000).toLong() // 16 seconds
+        locationRequest.interval = (30 * 1000).toLong() // 30 seconds
+        locationRequest.fastestInterval = (20 * 1000).toLong() // 20 seconds
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        Log.d(TAG, "Setup Location Updates")
     }
 
     /**
@@ -258,11 +304,7 @@ class Mobilitapp(private val context: Context, private val sensorLoader: SensorL
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                this as Activity,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                101
-            )
+            Log.d(TAG, "Need from location permissions.")
         }
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
