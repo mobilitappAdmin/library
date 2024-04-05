@@ -356,7 +356,7 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
                 time (s): ${winT}
                 """)
             } else {
-                return ("""STILL,
+                return ("""MOVING,
                 freqX: ${fAxis[maxX]} magX: ${psdX[maxX]}
                 freqY: ${fAxis[maxY]} magY: ${psdY[maxY]}
                 freqZ: ${fAxis[maxZ]} magZ: ${psdZ[maxZ]}

@@ -211,6 +211,7 @@ class Mobilitapp: Service() {
                     }
 
                     if (activity.split(',')[0] == "MOVING") {
+                        Log.d(TAG, accuracy.toString())
                         if (isStill(accuracy)) {
                             activity = "STILL," + activity.split(',')[1] //HERE
                         }
