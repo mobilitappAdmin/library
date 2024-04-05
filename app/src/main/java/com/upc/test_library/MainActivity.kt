@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.upc.mobilitapp.Mobilitapp
 import com.upc.test_library.ui.theme.TestlibraryTheme
 import java.util.*
@@ -32,7 +33,6 @@ open class MainActivity : ComponentActivity() {
     companion object {
         private const val PERMISSION_REQUEST_CODE = 1
     }
-
 
     private fun requestPermissions() {
         val locationPermissionRequest = registerForActivityResult(
@@ -54,8 +54,26 @@ open class MainActivity : ComponentActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION))
     }
+    private val notificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) {
+            // if permission was denied, the service can still run only the notification won't be visible
+        }
 
     private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)) {
+                android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+                    // permission already granted
+                }
+
+                else -> {
+                    notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+
         // Check if the API level is 26 (Android 8.0) or higher, as NotificationChannel class is new to API 26.
         if (SDK_INT >= Build.VERSION_CODES.O) {
             val name: String ="Mobilitapp_notification_channel"
