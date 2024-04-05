@@ -4,18 +4,19 @@ import android.Manifest
 import android.R
 import android.app.Activity
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.upc.mobilitapp.multimodal.MLService
 import com.upc.mobilitapp.multimodal.StopService
@@ -105,9 +106,12 @@ class Mobilitapp: Service() {
         val NotificationChannel = intent.getStringExtra("NotificationChannel")
 
         if (NotificationTitle != null && NotificationContent != null && NotificationChannel != null) {
-            //TODO add prosibility to add default title and content
             notification =
                 createNotification(NotificationTitle, NotificationContent, NotificationChannel)!!
+        }
+        else {
+            notification =
+                createNotification("Mobilitapp", "Foreground service developed", "Mobilitapp_notification_channel")!!
         }
     }
 
@@ -158,7 +162,7 @@ class Mobilitapp: Service() {
 
         fusedLocationClient.removeLocationUpdates(locationCallback)
         sensorLoader.stopCapture()
-        /* TODO
+        /* TODO add UserInfo connections
         //push server
         if (!first) {
             userInfoService.createUserInfoDataFile(
@@ -296,15 +300,38 @@ class Mobilitapp: Service() {
      */
     private fun startLocationUpdates() {
         // Start receiving location updates
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.d(TAG, "Need from location permissions.")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // For Android 13 (API level 33) and above, request the new foreground service location permission
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.FOREGROUND_SERVICE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this as Activity,
+                    arrayOf<String>(Manifest.permission.FOREGROUND_SERVICE_LOCATION),
+                    1
+                )
+            }
+        }
+        else {
+            // For versions below Android 13, ensure the app has fine or coarse location permissions
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this as Activity,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this as Activity, arrayOf<String>(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ), 1
+                )
+            }
         }
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
