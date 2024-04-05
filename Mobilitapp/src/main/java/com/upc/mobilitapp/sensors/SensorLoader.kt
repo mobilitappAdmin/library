@@ -244,7 +244,6 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
      */
     fun analyseLastWindow(): String {
         if ( currentAccWindow.size > 256) {
-
             var winSamples = currentAccWindow.size.toDouble()
             val winT =
                 (currentDateWindow[currentDateWindow.size - 1].time - currentDateWindow[0].time) / 1000.0
@@ -357,7 +356,7 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
                 time (s): ${winT}
                 """)
             } else {
-                return ("""MOVING,
+                return ("""STILL,
                 freqX: ${fAxis[maxX]} magX: ${psdX[maxX]}
                 freqY: ${fAxis[maxY]} magY: ${psdY[maxY]}
                 freqZ: ${fAxis[maxZ]} magZ: ${psdZ[maxZ]}
