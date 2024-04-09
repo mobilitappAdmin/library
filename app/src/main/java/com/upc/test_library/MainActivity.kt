@@ -1,5 +1,6 @@
 package com.upc.test_library
 
+import MainViewModel
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,6 +11,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -20,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.upc.mobilitapp.Mobilitapp
 import com.upc.test_library.ui.theme.TestlibraryTheme
 import java.util.*
@@ -93,51 +97,52 @@ open class MainActivity : ComponentActivity() {
         createNotificationChannel()
         requestPermissions()
 
+        // Instantiate your ViewModel
+        val viewModel: MainViewModel by viewModels()
+
         setContent {
             TestlibraryTheme {
-                Surface(
-                    color = MaterialTheme.colors.background
-                ) {
-                    MyAppUI()
+                Surface(color = MaterialTheme.colors.background) {
+                    MyAppUI(viewModel)
                 }
             }
         }
     }
 
-    private fun startMobilitAppService() {
-        val intent = Intent(this, Mobilitapp::class.java)
-        this.startForegroundService(intent)
-        intent.putExtra("userId", "3efds234r")
-    }
-
-    private fun stopMobilitAppService() {
-        stopService(Intent(this, Mobilitapp::class.java))
-    }
-
 }
 
 @Composable
-fun MyAppUI() {
+fun MyAppUI(viewModel: MainViewModel) {
+    // This will observe dataState and recompose whenever dataState changes.
+    val dataState = viewModel.dataState.collectAsState()
     val context = LocalContext.current
 
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(PaddingValues(16.dp))) {
-        // Start service button
-        Button(onClick = {
-            // Start the foreground service
-            context.startMobilitAppService()
-        }) {
-            Text("Start Service")
+        Text(text = dataState.value, modifier = Modifier.padding(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(PaddingValues(16.dp))
+        ) {
+            // Start service button
+            Button(onClick = {
+                // Start the foreground service
+                context.startMobilitAppService()
+            }) {
+                Text("Start Service")
+            }
+
+            // Stop service button
+            Button(onClick = {
+                // Stop the foreground service
+                context.stopMobilitAppService()
+            }) {
+                Text("Stop Service")
+            }
         }
 
-        // Stop service button
-        Button(onClick = {
-            // Stop the foreground service
-            context.stopMobilitAppService()
-        }) {
-            Text("Stop Service")
-        }
     }
 }
 
