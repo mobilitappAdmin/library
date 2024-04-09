@@ -339,6 +339,7 @@ class Mobilitapp: Service() {
             locationCallback,
             Looper.getMainLooper()
         )
+        Log.d(TAG, "Start location updates")
         // Initialize sensor data capture
         sensorLoader.initialize("Multimodal")
     }

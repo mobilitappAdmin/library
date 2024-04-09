@@ -24,11 +24,9 @@ import com.upc.mobilitapp.Mobilitapp
 import com.upc.test_library.ui.theme.TestlibraryTheme
 import java.util.*
 
+val CHANNEL_ID = "Mobilitapp_default_channel"
 
 open class MainActivity : ComponentActivity() {
-
-    private var ServiceState by mutableStateOf(false)
-    private var feedback by mutableStateOf("-")
 
     companion object {
         private const val PERMISSION_REQUEST_CODE = 1
@@ -76,7 +74,7 @@ open class MainActivity : ComponentActivity() {
 
         // Check if the API level is 26 (Android 8.0) or higher, as NotificationChannel class is new to API 26.
         if (SDK_INT >= Build.VERSION_CODES.O) {
-            val name: String ="Mobilitapp_notification_channel"
+            val name: String =CHANNEL_ID
             val importance =
                 NotificationManager.IMPORTANCE_DEFAULT // This determines how to interrupt the user for any notification belonging to this channel.
             val channel = NotificationChannel(name, name, importance)
@@ -88,12 +86,6 @@ open class MainActivity : ComponentActivity() {
         }
     }
 
-    private val objReciever = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, p1: Intent?) {
-
-
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -152,8 +144,15 @@ fun MyAppUI() {
 // Extension functions to cleanly call service operations from Compose.
 fun Context.startMobilitAppService() {
     val intent = Intent(this, Mobilitapp::class.java)
-    this.startForegroundService(intent)
+    //add info to the library
     intent.putExtra("userId", "3efds234r")
+    intent.putExtra("NotificationTitle", "MobilitApp Service")
+    intent.putExtra("NotificationDescription", "A multimodal trip is being captured using MobilitApp.")
+    intent.putExtra("NotificationChannel", CHANNEL_ID)
+
+    this.startForegroundService(intent)
+
+
 }
 
 fun Context.stopMobilitAppService() {
