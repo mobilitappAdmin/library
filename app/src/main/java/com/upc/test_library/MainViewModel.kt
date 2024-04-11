@@ -17,7 +17,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val data = StringBuilder().apply {
                 append("MacroState: ${intent?.getStringExtra("macroState")}\n")
                 append("MicroStates: ${intent?.getStringExtra("microStates")}\n")
-                append("Activity: ${intent?.getStringExtra("activity")}\n")
+                //append("Activity: ${intent?.getStringExtra("activity")}\n")
                 append("Location Accuracy: ${intent?.getStringExtra("location accuracy")}\n")
                 append("Location: ${intent?.getStringExtra("location")}\n")
                 append("Stop Information: ${intent?.getStringExtra("stop information")}\n")

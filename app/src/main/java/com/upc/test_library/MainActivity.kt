@@ -115,7 +115,6 @@ fun MyAppUI(viewModel: MainViewModel) {
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(PaddingValues(16.dp))) {
-        Text(text = dataState.value, modifier = Modifier.padding(8.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -136,6 +135,7 @@ fun MyAppUI(viewModel: MainViewModel) {
             }) {
                 Text("Stop Service")
             }
+            Text(text = dataState.value, modifier = Modifier.padding(8.dp))
         }
 
     }
