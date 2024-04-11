@@ -32,10 +32,6 @@ val CHANNEL_ID = "Mobilitapp_default_channel"
 
 open class MainActivity : ComponentActivity() {
 
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 1
-    }
-
     private fun requestPermissions() {
         val locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
@@ -93,7 +89,6 @@ open class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //checkAndRequestNotificationPermission()
         createNotificationChannel()
         requestPermissions()
 

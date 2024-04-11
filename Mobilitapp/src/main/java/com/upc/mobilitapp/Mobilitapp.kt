@@ -45,7 +45,7 @@ class Mobilitapp: Service() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var mlService: MLService
     private lateinit var stopService: StopService
-    private lateinit var  userInfoService: UserInfo //TODO
+    private lateinit var  userInfoService: UserInfo //TODO implement user info with the indications of ATM
 
     private var locations = ArrayList<Location>()
     private var fifoAct: LinkedList<String> = LinkedList<String>()
@@ -69,7 +69,7 @@ class Mobilitapp: Service() {
         startDate = Date()
         captureHash = Math.abs((startDate.toString() + user_id).hashCode())
         stop = Pair(0.0f, false)
-        // userInfoService = UserInfo(FILEPATH, captureHash.toString()+'_'+"UserInfo.csv") TODO
+        // userInfoService = UserInfo(FILEPATH, captureHash.toString()+'_'+"UserInfo.csv") //TODO implement user info with the indications of ATM
         mlService =  MLService(this)
         mlService.initialize() //load Model
         stopService = StopService(alpha = 0.2, max_radium = 30, num_points = 90, covering_threshold = 75.0F)
@@ -119,7 +119,7 @@ class Mobilitapp: Service() {
         // Build your notification here using the NotificationCompat.Builder
         // Don't forget to set a small icon, or the notification will not show
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, channel_id)
-            .setSmallIcon(R.drawable.ic_notification_overlay) //TODO change icon
+            .setSmallIcon(R.drawable.ic_notification_overlay) //TODO change notification icon
             .setContentTitle(title)
             .setContentText(content)
         return builder.build()
@@ -162,7 +162,8 @@ class Mobilitapp: Service() {
 
         fusedLocationClient.removeLocationUpdates(locationCallback)
         sensorLoader.stopCapture()
-        /* TODO add UserInfo connections
+        /* TODO implement user info with the indications of ATM
+
         //push server
         if (!first) {
             userInfoService.createUserInfoDataFile(

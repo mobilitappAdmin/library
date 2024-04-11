@@ -110,7 +110,7 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
 
             10000
         )
-        Log.d("MA lib", "Init sensors")
+        Log.d("Mobilitapp", "Init sensors")
         capturing = true
         startTime = simpleDateFormat.format(Date())
         endTime = null
@@ -230,7 +230,7 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
                 }
 
                 //val output = "Acc -> x: $acc_x, y: $acc_y, z: $acc_z  ->  $currentDT"
-                //Log.d("MA lib", "New analyzed window $output")
+                //Log.d("Mobilitapp", "New analyzed window $output")
             }
 
         }
@@ -379,7 +379,7 @@ class SensorLoader(private val context: Context, android_id: String): Service(),
         sensorManager.unregisterListener(this, sensorAcc)
         sensorManager.unregisterListener(this, sensorGyr)
         sensorManager.unregisterListener(this, sensorMag)
-        Log.d("MA lib", "Sensor capture finished")
+        Log.d("Mobilitapp", "Sensor capture finished")
 
         capturing = false
         finishedCapture = arrayOf(accArray, gyrArray, magArray)[0].size
